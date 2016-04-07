@@ -1,0 +1,142 @@
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+apply plugin: "jacoco"
+
+version = getVersion()
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations {
+    provided
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+    }
+    test {
+        resources {
+            srcDir 'src/test/data'
+        }
+        compileClasspath += configurations.provided
+    }
+}
+
+processResources {
+    filter { String line -> line.replace("{version}", getVersion()) }
+}
+
+processTestResources {
+    filter { String line -> line.replace("{version}", getVersion()) }
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.provided]
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    provided 'org.projectlombok:lombok:1.14.8'
+
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile "org.springframework.security.oauth:spring-security-oauth2"
+
+    testCompile "org.springframework.boot:spring-boot-starter-test"
+    testCompile('junit:junit:4.12') {
+        exclude group: 'org.hamcrest'
+    }
+    testCompile 'org.hamcrest:hamcrest-library:1.3'
+}
+
+buildscript {
+
+    ext {
+        springVersion = '4.2.1.RELEASE'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.3.1.RELEASE"
+    }
+
+}
+
+test {
+    exclude 'com/restbucks/**/smoke/*'
+    exclude 'com/restbucks/**/feature/*'
+
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+}
+
+test.finalizedBy jacocoTestReport
+
+task versioned() {
+    doLast {
+        def file = file("${buildDir}/version")
+        file.text = project.getVersion()
+    }
+}
+
+build.finalizedBy versioned
+
+task smokeTest(type: Test) {
+    // this task will be executed in isolation since all artifacts have been built and deployed
+    dependsOn = []
+
+    include 'com/restbucks/**/smoke/*'
+
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+    outputs.upToDateWhen { false }//force to always rerun
+
+    reports {
+        html {
+            destination = "$buildDir/reports/smoke"
+        }
+    }
+}
+
+task featureTest(type: Test) {
+    // this task will be executed in isolation since all artifacts have been built and deployed
+    dependsOn = []
+
+    include 'com/restbucks/**/feature/*'
+
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+    outputs.upToDateWhen { false }//force to always rerun
+
+    reports {
+        html {
+            destination = "$buildDir/reports/feature"
+        }
+    }
+}
+
+def getVersion() {
+    "0.1-" + getBuildNumber()
+}
+
+def getBuildNumber() {
+    getEnv('BUILD_NUM', 'dev')
+}
+
+def getEnv(String name, String defaultVal) {
+    def maybe = System.getenv(name)?.trim()
+    maybe ? System.getenv(name) : defaultVal
+}
+
