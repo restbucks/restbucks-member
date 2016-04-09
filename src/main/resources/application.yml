@@ -13,8 +13,9 @@ github:
 
 google:
   client:
-    accessTokenUri: https://github.com/login/oauth/access_token
-    userAuthorizationUri: https://github.com/login/oauth/authorize
+    accessTokenUri: https://www.googleapis.com/oauth2/v3/token
+    userAuthorizationUri: https://accounts.google.com/o/oauth2/auth
     clientAuthenticationScheme: form
+    scope: profile
   resource:
-    userInfoUri: https://api.github.com/user
+    userInfoUri: https://www.googleapis.com/oauth2/v1/userinfo
