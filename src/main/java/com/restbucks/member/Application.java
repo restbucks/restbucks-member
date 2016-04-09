@@ -24,6 +24,7 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.WebUtils;
 
@@ -35,6 +36,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
+
+import static java.lang.String.format;
 
 @SpringBootApplication
 @EnableOAuth2Client
@@ -57,23 +61,36 @@ public class Application extends WebSecurityConfigurerAdapter {
     }
 
     private Filter ssoFilter() {
-        OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter("/login/github");
-        OAuth2RestTemplate githubTemplate = new OAuth2RestTemplate(github(), oauth2ClientContext);
-        filter.setRestTemplate(githubTemplate);
-        filter.setTokenServices(new UserInfoTokenServices(githubResource().getUserInfoUri(), github().getClientId()));
+        CompositeFilter filter = new CompositeFilter();
+        filter.setFilters(new ArrayList<Filter>() {
+            {
+                add(ssoFilter("google", google()));
+                add(ssoFilter("github", github()));
+            }
+        });
+        return filter;
+    }
+
+    private OAuth2ClientAuthenticationProcessingFilter ssoFilter(String provideName,
+                                                                 ClientResources clientResources) {
+        OAuth2ClientAuthenticationProcessingFilter filter =
+                new OAuth2ClientAuthenticationProcessingFilter(format("/login/%s", provideName));
+        filter.setRestTemplate(new OAuth2RestTemplate(clientResources.getClient(), oauth2ClientContext));
+        filter.setTokenServices(new UserInfoTokenServices(clientResources.getResource().getUserInfoUri(),
+                clientResources.getClient().getClientId()));
         return filter;
     }
 
     @Bean
-    @ConfigurationProperties("github.client")
-    protected OAuth2ProtectedResourceDetails github() {
-        return new AuthorizationCodeResourceDetails();
+    @ConfigurationProperties("github")
+    protected ClientResources github() {
+        return new ClientResources();
     }
 
     @Bean
-    @ConfigurationProperties("github.resource")
-    protected ResourceServerProperties githubResource() {
-        return new ResourceServerProperties();
+    @ConfigurationProperties("google")
+    protected ClientResources google() {
+        return new ClientResources();
     }
 
     @Bean
@@ -120,5 +137,19 @@ public class Application extends WebSecurityConfigurerAdapter {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
+    }
+
+    class ClientResources {
+
+        private OAuth2ProtectedResourceDetails client = new AuthorizationCodeResourceDetails();
+        private ResourceServerProperties resource = new ResourceServerProperties();
+
+        public OAuth2ProtectedResourceDetails getClient() {
+            return client;
+        }
+
+        public ResourceServerProperties getResource() {
+            return resource;
+        }
     }
 }
