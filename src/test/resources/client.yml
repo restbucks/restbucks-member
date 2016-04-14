@@ -1,0 +1,18 @@
+server:
+  port: 11002
+
+security:
+  oauth2:
+    client:
+      client-id: acme
+      client-secret: acmesecret
+      access-token-uri: http://localhost:11001/oauth/token
+      user-authorization-uri: http://localhost:11001/oauth/authorize
+    resource:
+      user-info-uri: http://localhost:11001/me
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    

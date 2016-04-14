@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoT
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -18,6 +20,9 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -38,6 +43,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -45,6 +52,7 @@ import static java.lang.String.format;
 @EnableOAuth2Client
 @EnableAuthorizationServer
 @RestController
+@Order(6)//The @EnableResourceServer annotation creates a security filter with @Order(3) by default, so by moving the main application security to @Order(6) we ensure that the rule for "/me" takes precedence.
 public class Application extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -56,6 +64,7 @@ public class Application extends WebSecurityConfigurerAdapter {
         http.antMatcher("/**").authorizeRequests()
                 .antMatchers("/", "/login**", "/webjars/**").permitAll()
                 .anyRequest().authenticated()
+                .and().exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/"))
                 .and().logout().logoutSuccessUrl("/").permitAll()
                 .and().csrf().csrfTokenRepository(csrfTokenRepository())
                 .and().addFilterAfter(csrfHeaderFilter(), CsrfFilter.class)
@@ -132,9 +141,13 @@ public class Application extends WebSecurityConfigurerAdapter {
         return repository;
     }
 
-    @RequestMapping("/user")
-    public Principal user(Principal principal) {
-        return principal;
+    @RequestMapping({"/user", "/me"})
+    public Map<String, String> user(Principal principal) {
+        return new LinkedHashMap<String, String>() {
+            {
+                put("name", principal.getName());
+            }
+        };
     }
 
     public static void main(String[] args) {
@@ -152,6 +165,20 @@ public class Application extends WebSecurityConfigurerAdapter {
 
         public ResourceServerProperties getResource() {
             return resource;
+        }
+    }
+
+    @Configuration
+    @EnableResourceServer
+    protected static class ResourceServerConfiguration
+            extends ResourceServerConfigurerAdapter {
+        @Override
+        public void configure(HttpSecurity http) throws Exception {
+            // @formatter:off
+			http
+				.antMatcher("/me")
+				.authorizeRequests().anyRequest().authenticated();
+			// @formatter:on
         }
     }
 }
