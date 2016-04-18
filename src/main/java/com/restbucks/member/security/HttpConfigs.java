@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -15,8 +17,6 @@ import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticat
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
@@ -43,10 +43,12 @@ import static java.lang.String.format;
 @EnableAuthorizationServer
 @Order(6)
 //The @EnableResourceServer annotation creates a security filter with @Order(3) by default, so by moving the main application security to @Order(6) we ensure that the rule for "/me" takes precedence.
-public class HttpConfigs extends WebSecurityConfigurerAdapter {
+public class HttpConfigs extends WebSecurityConfigurerAdapter implements ApplicationEventPublisherAware {
 
     @Autowired
     private OAuth2ClientContext oauth2ClientContext;
+
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -128,7 +130,12 @@ public class HttpConfigs extends WebSecurityConfigurerAdapter {
         filter.setRestTemplate(new OAuth2RestTemplate(clientResources.getClient(), oauth2ClientContext));
         filter.setTokenServices(new UserInfoTokenServices(clientResources.getResource().getUserInfoUri(),
                 clientResources.getClient().getClientId()));
+        filter.setApplicationEventPublisher(applicationEventPublisher);
         return filter;
     }
 
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
 }
