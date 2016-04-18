@@ -33,7 +33,7 @@
             .controller("home", function ($http, $location) {
                 var self = this;
                 $http.get("/user").success(function (data) {
-                    self.user = data.userAuthentication.details.name;
+                    self.user = data.name;
                     self.authenticated = true;
                 }).error(function () {
                     self.user = "N/A";
