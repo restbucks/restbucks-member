@@ -48,6 +48,11 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
     compile "org.springframework.security.oauth:spring-security-oauth2"
 
+    // jdbc
+    compile "org.flywaydb:flyway-core:${flywayVersion}"
+    compile "org.springframework.boot:spring-boot-starter-jdbc"
+    compile "mysql:mysql-connector-java:5.1.38"
+
     compile "org.webjars:angularjs:1.4.3"
     compile "org.webjars:jquery:2.1.1"
     compile "org.webjars:bootstrap:3.2.0"
@@ -64,6 +69,7 @@ buildscript {
 
     ext {
         springVersion = '4.2.1.RELEASE'
+        flywayVersion = '3.2.1'
     }
 
     repositories {
