@@ -53,11 +53,13 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-jdbc"
     compile "mysql:mysql-connector-java:5.1.38"
 
+    /// frontend
     compile "org.webjars:angularjs:1.4.3"
     compile "org.webjars:jquery:2.1.1"
     compile "org.webjars:bootstrap:3.2.0"
     compile "org.webjars:webjars-locator"
 
+    // test
     testCompile "org.springframework.boot:spring-boot-starter-test"
     testCompile('junit:junit:4.12') {
         exclude group: 'org.hamcrest'

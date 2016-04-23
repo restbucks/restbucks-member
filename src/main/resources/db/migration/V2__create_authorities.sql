@@ -5,4 +5,4 @@ CREATE TABLE authorities (
   PRIMARY KEY (id),
   UNIQUE KEY uk_authorities (authority, username),
   CONSTRAINT fk_authorities_username FOREIGN KEY (username) REFERENCES users (username)
-) ENGINE = InnoDB;
+);

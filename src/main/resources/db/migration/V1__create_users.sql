@@ -3,4 +3,4 @@ CREATE TABLE users (
   password VARCHAR(45) NOT NULL,
   enabled  TINYINT     NOT NULL DEFAULT 1,
   PRIMARY KEY (username)
-) ENGINE = InnoDB;
+);

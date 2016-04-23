@@ -43,7 +43,7 @@ import static java.lang.String.format;
 @EnableAuthorizationServer
 @Order(6)
 //The @EnableResourceServer annotation creates a security filter with @Order(3) by default, so by moving the main application security to @Order(6) we ensure that the rule for "/me" takes precedence.
-public class HttpConfigs extends WebSecurityConfigurerAdapter implements ApplicationEventPublisherAware {
+public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter implements ApplicationEventPublisherAware {
 
     @Autowired
     private OAuth2ClientContext oauth2ClientContext;

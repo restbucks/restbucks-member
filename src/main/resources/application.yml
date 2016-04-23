@@ -3,14 +3,6 @@ spring:
     chain:
       enabled: true
 
-security:
-  oauth2:
-    client:
-      client-id: acme
-      client-secret: acmesecret
-      scope: read,write
-      auto-approve-scopes: '.*'
-
 github:
   client:
     accessTokenUri: https://github.com/login/oauth/access_token
