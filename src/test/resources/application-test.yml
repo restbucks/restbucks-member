@@ -1,0 +1,19 @@
+github:
+  client:
+    clientId: dd9bb91780a787c7ffcc
+    clientSecret: edf317c5f952f975e6bf318b4deba71911d2e0c6
+
+google:
+  client:
+    clientId: 509470510224-us1cjgkjeqlfs9t9kocd0s4oj6a8b71r.apps.googleusercontent.com
+    clientSecret: ukrLQXitJdffF0IMrK-j5VrA
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dev_restbucks_member?useUnicode=true&characterEncoding=utf-8
+    username: member
+    password: 123456
+
+logging:
+  level:
+    org.springframework.security: DEBUG

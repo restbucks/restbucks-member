@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 
 @Configuration
 @EnableResourceServer
+//The @EnableResourceServer annotation creates a security filter with @Order(3) by default, so by moving the main application security to @Order(6) we ensure that the rule for "/me" takes precedence.
 public class ResourceServerAuthConfiguration extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {

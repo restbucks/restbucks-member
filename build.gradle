@@ -52,6 +52,10 @@ dependencies {
     compile "org.flywaydb:flyway-core:${flywayVersion}"
     compile "org.springframework.boot:spring-boot-starter-jdbc"
     compile "mysql:mysql-connector-java:5.1.38"
+    testCompile 'com.h2database:h2:1.4.187'
+    testCompile("org.flywaydb.flyway-test-extensions:flyway-spring-test:${flywayVersion}") {
+        exclude group: 'org.slf4j' //introducing multiple slf4j impl
+    }
 
     /// frontend
     compile "org.webjars:angularjs:1.4.3"
